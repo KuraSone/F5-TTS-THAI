@@ -1,5 +1,8 @@
+import hashlib
 import random
 import sys
+import os
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 import gradio as gr 
 import tempfile
 import torchaudio
@@ -37,9 +40,11 @@ f5tts_model = None
 def load_f5tts(ckpt_path, vocab_path=vocab_base, model_type="v1"):
     if model_type == "v1":
         F5TTS_model_cfg = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, text_mask_padding=False, conv_layers=4, pe_attn_head=1)
+        vocab_path = r'/home/ubuntu/PycharmProjects/F5-TTS-THAI/vocab/vocab.txt'
     elif model_type == "v2":
         F5TTS_model_cfg = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, text_mask_padding=True, conv_layers=4, pe_attn_head=None)
         vocab_path = "./vocab/vocab_ipa.txt"
+        vocab_path = r'/home/ubuntu/PycharmProjects/F5-TTS-THAI/vocab/vocab_ipa.txt'
     model = load_model(DiT, F5TTS_model_cfg, ckpt_path, vocab_file = vocab_path, use_ema=True)
     print(f"Loaded model from {ckpt_path}")
     return model
@@ -68,7 +73,7 @@ def load_custom_model(model_choice,model_custom_path):
             model_type = "v2" if model_choice == "V2" else "v1"
         )
         return f"Loaded Model {model_choice}"
-    
+
 def infer_tts(
     ref_audio_orig,
     ref_text,
@@ -98,7 +103,6 @@ def infer_tts(
     if not gen_text.strip():
         gr.Warning("Please enter text to generate.")
         return gr.update(), gr.update(), ref_text, output_seed
-    
     ref_audio, ref_text = preprocess_ref_audio_text(ref_audio_orig, ref_text)
     
     gen_text_cleaned = normalize_text(gen_text)
@@ -542,11 +546,7 @@ def main():
     args = parser.parse_args()
 
     demo = create_gradio_interface()
-    demo.launch(inbrowser=True, share=args.share)
+    demo.launch(inbrowser=True, share=True)
 
 if __name__ == "__main__":
     main()
-
-
-
-

@@ -2,6 +2,7 @@
 # Make adjustments inside functions, and consider both gradio and cli scripts if need to change func output format
 import os
 import sys
+import io
 from concurrent.futures import ThreadPoolExecutor
 
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"  # for MPS device compatibility
@@ -299,7 +300,10 @@ def remove_silence_edges(audio, silence_threshold=-42):
 def preprocess_ref_audio_text(ref_audio_orig, ref_text, clip_short=True, show_info=print, device=device):
     show_info("Converting audio...")
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-        aseg = AudioSegment.from_file(ref_audio_orig)
+        if isinstance(ref_audio_orig, bytes):
+            aseg = AudioSegment.from_file(io.BytesIO(ref_audio_orig))
+        else:
+            aseg = AudioSegment.from_file(ref_audio_orig)
 
         if clip_short:
             # 1. try to find long silence for clipping

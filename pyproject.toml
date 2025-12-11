@@ -58,6 +58,8 @@ eval = [
     "modelscope",
     "zhconv",
     "zhon",
+    "httpx",
+    "fastapi",
 ]
 
 [project.urls]
