@@ -1,4 +1,6 @@
 import os
+from typing import Annotated
+
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 import time
 import asyncio
@@ -12,7 +14,7 @@ from contextlib import asynccontextmanager
 import soundfile as sf  # type: ignore
 import uvicorn
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, Response, Request, Depends, FastAPI
+from fastapi import APIRouter, Response, Request, Depends, FastAPI, Header
 
 from f5_tts.infer.utils_infer import (
     infer_process,
@@ -55,8 +57,10 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/tts_url")
-async def tts(data: Data, request: Request) -> Response:
+async def tts(data: Data, request: Request, x_api_key: Annotated[str | None, Header()] = None) -> Response:
     try:
+        if x_api_key != 'domeker-ai-ZG9tZWtlci1haQ==':
+            return Response(content="Invalid API key", status_code=401)
         audio_url = data.audio_paths[0]
         if audio_url in audio_cache:
             audio_bytes = audio_cache[audio_url]
